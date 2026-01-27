@@ -1,248 +1,211 @@
- import { useState, useEffect } from "react";
-
+ import { useEffect, useMemo, useState } from "react";
 import Sidebar from "./components/Sidebar";
 import WeatherDisplay from "./components/WeatherDisplay";
 import "./styles/App.css";
-// update
+import { getCurrent } from "./api/weather";
 
+const GEO_ID = "__geo__";
 
+function formatUpdatedAt(lastUpdated) {
+  // lastUpdated: "2026-01-27 07:10"
+  const d = new Date(String(lastUpdated).replace(" ", "T"));
+  if (Number.isNaN(d.getTime())) return `Оновлено: ${lastUpdated}`;
 
+  const fmt = new Intl.DateTimeFormat(["uk-UA", "en-US"], {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-const API_KEY = "REMOVED";
+  return `Оновлено: ${fmt.format(d)}`;
+}
 
+function toWeatherView(apiData, id) {
+  return {
+    id,
+    city: apiData.location.name,
+    country: apiData.location.country,
+    updatedAt: formatUpdatedAt(apiData.current.last_updated),
+    conditionText: apiData.current.condition.text,
+    icon: <img src={apiData.current.condition.icon} alt="icon" />,
+    tempC: Math.round(apiData.current.temp_c),
+    feelsLikeC: Math.round(apiData.current.feelslike_c),
+    humidity: apiData.current.humidity,
+    windKph: apiData.current.wind_kph,
+    pressureMb: apiData.current.pressure_mb,
+  };
+}
 
+function makeCityIdFromApi(apiData) {
+  // стабільний id: lat,lon
+  return `${apiData.location.lat},${apiData.location.lon}`;
+}
 
 export default function App() {
+  const [cities, setCities] = useState([
+    { id: "Kyiv", q: "Kyiv", name: "Київ", country: "Ukraine" },
+    { id: "Lviv", q: "Lviv", name: "Львів", country: "Ukraine" },
+    { id: "Odesa", q: "Odesa", name: "Одеса", country: "Ukraine" },
+    { id: "Kharkiv", q: "Kharkiv", name: "Харків", country: "Ukraine" },
+    { id: "London", q: "London", name: "Лондон", country: "UK" },
+    { id: "Paris", q: "Paris", name: "Париж", country: "France" },
+    { id: "New York", q: "New York", name: "Нью-Йорк", country: "USA" },
+    { id: "Tokyo", q: "Tokyo", name: "Токіо", country: "Japan" },
+  ]);
 
-const [cities, setCities] = useState([
+  const [selectedCityId, setSelectedCityId] = useState(GEO_ID);
 
-{ id: "Kyiv", name: "Київ", country: "Ukraine" },
+  const [weather, setWeather] = useState(null); // для міст зі списку
+  const [geoWeather, setGeoWeather] = useState(null); // для GEO
+  const [isLoading, setIsLoading] = useState(false);
 
-{ id: "Lviv", name: "Львів", country: "Ukraine" },
+  const selectedCity = useMemo(() => {
+    return cities.find((c) => c.id === selectedCityId) || null;
+  }, [cities, selectedCityId]);
 
-{ id: "Odesa", name: "Одеса", country: "Ukraine" },
+  async function loadWeatherForCity(city) {
+    setIsLoading(true);
+    try {
+      const data = await getCurrent(city.q, "uk");
+      setWeather(toWeatherView(data, city.id));
+    } catch (e) {
+      console.error(e);
+      alert(`Не вдалося отримати погоду: ${e.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
-{ id: "Kharkiv", name: "Харків", country: "Ukraine" },
+  async function addCityByQuery(query) {
+    const q = query.trim();
+    if (!q) return;
 
-{ id: "London", name: "Лондон", country: "UK" },
+    setIsLoading(true);
+    try {
+      // 1) якщо місто не існує — тут буде помилка, і ми НІЧОГО не додамо
+      const data = await getCurrent(q, "uk");
 
-{ id: "Paris", name: "Париж", country: "France" },
+      const id = makeCityIdFromApi(data);
+      const name = data.location.name;
+      const country = data.location.country;
+      const latlon = `${data.location.lat},${data.location.lon}`;
 
-{ id: "New York", name: "Нью-Йорк", country: "USA" },
+      // 2) додати у список, якщо ще нема
+      setCities((prev) => {
+        if (prev.some((c) => c.id === id)) return prev;
+        return [{ id, q: latlon, name, country }, ...prev];
+      });
 
-{ id: "Tokyo", name: "Токіо", country: "Japan" },
+      // 3) одразу показати погоду (без другого fetch)
+      setWeather(toWeatherView(data, id));
+      setSelectedCityId(id);
+    } catch (e) {
+      console.error(e);
+      alert(`Не знайдено локацію: ${e.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
-]);
+  function handleSelectCity(id) {
+    setSelectedCityId(id);
+  }
 
+  async function selectGeo() {
+    if (!navigator.geolocation) {
+      alert("Геолокація не підтримується браузером");
+      return;
+    }
 
+    setIsLoading(true);
 
-const [selectedCityId, setSelectedCityId] = useState("");
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const q = `${pos.coords.latitude},${pos.coords.longitude}`;
+          const data = await getCurrent(q, "uk");
 
-const [weather, setWeather] = useState(null);
+          setGeoWeather(toWeatherView(data, GEO_ID));
+          setSelectedCityId(GEO_ID);
+        } catch (e) {
+          console.error(e);
+          alert(`Не вдалося отримати погоду по геопозиції: ${e.message}`);
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      async () => {
+        // fallback якщо не дав доступ
+        try {
+          const data = await getCurrent("Kyiv", "uk");
+          setGeoWeather(toWeatherView(data, GEO_ID));
+          setSelectedCityId(GEO_ID);
+        } catch (e) {
+          alert(`Fallback не спрацював: ${e.message}`);
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
 
-const [isLoading, setIsLoading] = useState(false);
+  // старт: одразу пробуємо GEO
+  useEffect(() => {
+    selectGeo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  // якщо вибрали місто зі списку — підвантажити погоду
+  useEffect(() => {
+    if (selectedCityId === GEO_ID) return;
+    if (!selectedCity) return;
+    if (weather?.id === selectedCityId) return;
 
+    loadWeatherForCity(selectedCity);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCityId, selectedCity]);
 
-const fetchWeather = async (query) => {
+  const shownWeather = selectedCityId === GEO_ID ? geoWeather : weather;
 
-if (!query) return;
+  const getWeatherClass = () => {
+    if (!shownWeather) return "";
+    const condition = shownWeather.conditionText.toLowerCase();
 
-setIsLoading(true);
+    if (condition.includes("сонячно") || condition.includes("ясно")) return "sunny-theme";
+    if (condition.includes("дощ") || condition.includes("злива")) return "rainy-theme";
+    if (
+      condition.includes("хмарно") ||
+      condition.includes("пасмурно") ||
+      condition.includes("мінлива хмарність")
+    )
+      return "cloudy-theme";
+    if (condition.includes("сніг")) return "snowy-theme";
 
-try {
+    return "";
+  };
 
-const response = await fetch(
+  return (
+    <div className={`app ${getWeatherClass()}`}>
+      <Sidebar
+        cities={cities}
+        selectedCityId={selectedCityId}
+        onSelectCity={handleSelectCity}
+        onAddCity={addCityByQuery}
+        onSelectGeo={selectGeo}
+      />
 
-`https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${query}&lang=uk`
-
-);
-
-if (!response.ok) throw new Error("Місто не знайдено");
-
-const data = await response.json();
-
-
-
-setWeather({
-
-city: data.location.name,
-
-country: data.location.country,
-
-updatedAt: data.current.last_updated,
-
-conditionText: data.current.condition.text,
-
-icon: <img src={data.current.condition.icon} alt="icon" />,
-
-tempC: Math.round(data.current.temp_c),
-
-feelsLikeC: Math.round(data.current.feelslike_c),
-
-humidity: data.current.humidity,
-
-windKph: data.current.wind_kph,
-
-pressureMb: data.current.pressure_mb,
-
-});
-
-
-
-setCities((prev) =>
-
-prev.map((c) =>
-
-c.id.toLowerCase() === query.toLowerCase() || c.name === data.location.name
-
-? { ...c, country: data.location.country, name: data.location.name }
-
-: c
-
-)
-
-);
-
-
-setSelectedCityId(data.location.name);
-
-} catch (error) {
-
-console.error(error);
-
-alert("Не вдалося знайти таке місто.");
-
-} finally {
-
-setIsLoading(false);
-
+      <main className="main">
+        {isLoading ? (
+          <div className="card">
+            <h2>Завантаження...</h2>
+          </div>
+        ) : (
+          <WeatherDisplay weather={shownWeather} />
+        )}
+      </main>
+    </div>
+  );
 }
-
-};
-
-
-
-useEffect(() => {
-
-if (navigator.geolocation) {
-
-navigator.geolocation.getCurrentPosition(
-
-(position) => {
-
-const { latitude, longitude } = position.coords;
-
-fetchWeather(`${latitude},${longitude}`);
-
-},
-
-() => fetchWeather("Kyiv")
-
-);
-
-} else {
-
-fetchWeather("Kyiv");
-
-}
-
-}, []);
-
-
-
-useEffect(() => {
-
-if (selectedCityId && weather?.city !== selectedCityId) {
-
-fetchWeather(selectedCityId);
-
-}
-
-}, [selectedCityId]);
-
-
-
-function handleSelectCity(id) {
-
-setSelectedCityId(id);
-
-}
-
-
-
-function handleAddCity(cityName) {
-
-const cityExists = cities.find(c => c.id.toLowerCase() === cityName.toLowerCase());
-
-if (!cityExists) {
-
-const newCity = { id: cityName, name: cityName, country: "Оновлення..." };
-
-setCities((prev) => [newCity, ...prev]);
-
-}
-
-setSelectedCityId(cityName);
-
-}
-
-
-
-const getWeatherClass = () => {
-
-if (!weather) return "";
-
-const condition = weather.conditionText.toLowerCase();
-
-
-if (condition.includes("сонячно") || condition.includes("ясно")) return "sunny-theme";
-
-if (condition.includes("дощ") || condition.includes("злива")) return "rainy-theme";
-
-if (condition.includes("хмарно") || condition.includes("пасмурно") || condition.includes("мінлива хмарність")) return "cloudy-theme";
-
-if (condition.includes("сніг")) return "snowy-theme";
-
-
-return "";
-
-};
-
-
-
-return (
-
-<div className={`app ${getWeatherClass()}`}>
-
-<Sidebar
-
-cities={cities}
-
-selectedCityId={selectedCityId}
-
-onSelectCity={handleSelectCity}
-
-onAddCity={handleAddCity}
-
-/>
-
-<main className="main">
-
-{isLoading ? (
-
-<div className="card"><h2>Завантаження...</h2></div>
-
-) : (
-
-<WeatherDisplay weather={weather} />
-
-)}
-
-</main>
-
-</div>
-
-);
-
-} 
