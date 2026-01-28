@@ -1,9 +1,12 @@
 export default function WeatherDisplay({ weather }) {
   if (!weather) {
     return (
-      <div className="card">
-        <h2 className="cardTitle">Немає даних</h2>
-        <p className="muted">Обери місто, щоб побачити погоду.</p>
+      <div className="emptyCenter">
+        <div className="emptyCard">
+          <div className="emptyIcon" aria-hidden="true" />
+          <h2 className="emptyTitle">Небо на сьогодні</h2>
+          <p className="emptySub">Обери місто — і простір зміниться разом із ним.</p>
+        </div>
       </div>
     );
   }
@@ -11,29 +14,27 @@ export default function WeatherDisplay({ weather }) {
   return (
     <div className="content">
       <header className="topBar">
-        <div>
+        <div className="topLeft">
           <div className="location">
-            {weather.city} <span className="muted">· {weather.country}</span>
+            {String(weather.city).toUpperCase()}{" "}
+            <span className="mutedCaps">{String(weather.country).toUpperCase()}</span>
           </div>
-          <div className="updated">{weather.updatedAt}</div>
+          <div className="condLine muted">{weather.conditionText}</div>
         </div>
 
-        <div className="pill">{weather.conditionText}</div>
+        <div className="updated muted">{weather.updatedAt}</div>
       </header>
 
-      <section className="card hero">
-        <div className="tempRow">
-          <div className="icon" aria-hidden="true">
-            {weather.icon}
-          </div>
-
-          <div>
-            <div className="temp">{weather.tempC}°C</div>
-            <div className="muted">Відчувається як {weather.feelsLikeC}°C</div>
-          </div>
+      <section className="centerBlock">
+        <div className="temp">
+          {weather.tempC > 0 ? `+${weather.tempC}` : weather.tempC}°C
+        </div>
+        <div className="muted">
+          Відчувається як{" "}
+          {weather.feelsLikeC > 0 ? `+${weather.feelsLikeC}` : weather.feelsLikeC}°C
         </div>
 
-        <div className="statGrid">
+        <div className="statGridFig">
           <Stat label="Вологість" value={`${weather.humidity}%`} />
           <Stat label="Вітер" value={`${weather.windKph} км/год`} />
           <Stat label="Тиск" value={`${weather.pressureMb} mb`} />
@@ -46,7 +47,7 @@ export default function WeatherDisplay({ weather }) {
 
 function Stat({ label, value }) {
   return (
-    <div className="stat">
+    <div className="statFig">
       <div className="statLabel">{label}</div>
       <div className="statValue">{value}</div>
     </div>

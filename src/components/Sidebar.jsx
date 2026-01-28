@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { searchLocations } from "../api/weather";
 
 export default function Sidebar({
@@ -19,7 +19,7 @@ export default function Sidebar({
     const value = inputValue.trim();
     if (!value) return;
 
-    onAddCity(value); // додасть тільки якщо локація існує
+    onAddCity(value);
     setInputValue("");
     setIsOpen(false);
     setSuggestions([]);
@@ -45,7 +45,7 @@ export default function Sidebar({
         setSuggestions(res);
         setIsOpen(true);
       } catch {
-        // ignore abort/errors
+        // ignore
       }
     }, 350);
 
@@ -53,7 +53,6 @@ export default function Sidebar({
   }, [inputValue]);
 
   function pickSuggestion(item) {
-    // додаємо по lat,lon (найнадійніше + без дублів)
     const q = `${item.lat},${item.lon}`;
     onAddCity(q);
 
@@ -62,33 +61,60 @@ export default function Sidebar({
     setSuggestions([]);
   }
 
+  // ✅ GEO + міста в один список + “вибране перше”
+  const orderedItems = useMemo(() => {
+    const GEO_ID = "__geo__";
+
+    const geoItem = {
+      kind: "geo",
+      id: GEO_ID,
+      name: "Моя поточна геопозиція",
+      country: "GPS",
+      onClick: onSelectGeo,
+    };
+
+    const cityItems = cities.map((c) => ({
+      kind: "city",
+      id: c.id,
+      name: c.name,
+      country: c.country,
+      onClick: () => onSelectCity(c.id),
+    }));
+
+    const all = [geoItem, ...cityItems];
+
+    const selected = all.find((x) => x.id === selectedCityId);
+    const rest = all.filter((x) => x.id !== selectedCityId);
+
+    return selected ? [selected, ...rest] : all;
+  }, [cities, onSelectCity, onSelectGeo, selectedCityId]);
+
   return (
     <aside className="sidebar">
-      <div className="sidebarHeader">
-        <h1 className="appTitle">Weather</h1>
+      <div className="brandRow">
+        <div className="brandText">OUR Wea:)ther</div>
       </div>
 
       <form onSubmit={handleSubmit} className="searchForm" autoComplete="off">
-        <div className="searchWrapper">
-          <span className="searchIcon">🔍</span>
+        <div className="searchPill">
+          <span className="searchIcon" aria-hidden="true">⌕</span>
           <input
             type="text"
             className="searchInput"
-            placeholder="Пошук міста..."
+            placeholder="Пошук міста ..."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onFocus={() => {
               if (suggestions.length) setIsOpen(true);
             }}
             onBlur={() => {
-              // щоб встигнути клікнути по підказці
               setTimeout(() => setIsOpen(false), 120);
             }}
           />
         </div>
 
         {isOpen && suggestions.length > 0 && (
-          <div className="suggestions">
+          <div className="suggestionsGlass">
             {suggestions.map((s) => (
               <button
                 key={`${s.lat},${s.lon}`}
@@ -107,41 +133,35 @@ export default function Sidebar({
         )}
       </form>
 
-      <div className="sidebarSectionTitle">Швидко</div>
+      <div className="sidebarGlass">
+        <div className="cityList">
+          {orderedItems.map((item) => {
+            const active = item.id === selectedCityId;
+            const isGeo = item.kind === "geo";
 
-      <ul className="cityList" style={{ marginBottom: 14 }}>
-        <li>
-          <button
-            type="button"
-            className={`cityItem ${selectedCityId === "__geo__" ? "active" : ""}`}
-            onClick={onSelectGeo}
-          >
-            <span className="cityName">📍 Моя поточна геопозиція</span>
-            <span className="cityMeta">GPS</span>
-          </button>
-        </li>
-      </ul>
-
-      <div className="sidebarSectionTitle">Міста</div>
-
-      <ul className="cityList">
-        {cities.map((c) => {
-          const isActive = c.id === selectedCityId;
-
-          return (
-            <li key={c.id}>
+            return (
               <button
+                key={item.id}
                 type="button"
-                className={`cityItem ${isActive ? "active" : ""}`}
-                onClick={() => onSelectCity(c.id)}
+                className={`cityPill ${active ? "isActive" : ""}`}
+                onClick={item.onClick}
               >
-                <span className="cityName">{c.name}</span>
-                <span className="cityMeta">{c.country}</span>
+                <div className="pillMeta">
+                  <span className="pillCountry">
+                    {isGeo ? "GPS" : String(item.country || "").toUpperCase()}
+                  </span>
+                  <span className="pillName">
+                    {isGeo ? "📍 " : ""}
+                    {item.name}
+                  </span>
+                </div>
+
+                {isGeo && <span className="gpsMark" aria-hidden="true" />}
               </button>
-            </li>
-          );
-        })}
-      </ul>
+            );
+          })}
+        </div>
+      </div>
     </aside>
   );
 }
