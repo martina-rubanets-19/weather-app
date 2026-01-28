@@ -3,7 +3,6 @@
   --bgB: #07083a;
 
   --glass: rgba(255,255,255,.08);
-  --glass2: rgba(255,255,255,.06);
   --border: rgba(255,255,255,.14);
 
   --text: rgba(255,255,255,.92);
@@ -29,12 +28,12 @@ body{
 
 /* ===== Layout ===== */
 .app{
-  min-height: 100dvh; /* ✅ мобільний “реальний” vh */
+  min-height: 100dvh;
   width: 100%;
   display: grid;
   grid-template-columns: 340px 1fr;
-  gap: clamp(14px, 2vw, 34px);
-  padding: clamp(12px, 2vw, 34px);
+  gap: clamp(12px, 2vw, 28px);
+  padding: clamp(10px, 2vw, 28px);
 
   position: relative;
   overflow: hidden;
@@ -54,25 +53,25 @@ body{
   z-index:0;
 }
 
-.sidebar, .main{ position: relative; z-index: 1; }
+.sidebar, .main{ position: relative; z-index: 1; min-width: 0; }
 
-/* Optional themes */
-.app.sunny-theme {
+/* ===== Themes (optional) ===== */
+.app.sunny-theme{
   background:
     radial-gradient(1100px 700px at 50% 15%, rgba(255,230,100,.16), transparent 60%),
     linear-gradient(180deg, #0b2a4a, #06083a);
 }
-.app.rainy-theme {
+.app.rainy-theme{
   background:
     radial-gradient(1100px 700px at 50% 15%, rgba(100,150,255,.14), transparent 60%),
     linear-gradient(180deg, #0c1a2b, #06083a);
 }
-.app.cloudy-theme {
+.app.cloudy-theme{
   background:
     radial-gradient(1100px 700px at 50% 15%, rgba(200,200,255,.10), transparent 60%),
     linear-gradient(180deg, #141a2a, #06083a);
 }
-.app.snowy-theme {
+.app.snowy-theme{
   background:
     radial-gradient(1100px 700px at 50% 15%, rgba(255,255,255,.10), transparent 60%),
     linear-gradient(180deg, #0e1c34, #06083a);
@@ -80,11 +79,11 @@ body{
 
 /* ===== Sidebar ===== */
 .sidebar{
-  height: calc(100dvh - (2 * clamp(12px, 2vw, 34px)));
+  height: calc(100dvh - (2 * clamp(10px, 2vw, 28px)));
   display:flex;
   flex-direction: column;
   gap: 14px;
-  min-width: 0;
+  min-height: 0; /* ✅ */
 }
 
 .brandRow{ padding: 6px 6px 0; }
@@ -94,6 +93,7 @@ body{
   font-size: 22px;
 }
 
+/* Search */
 .searchForm{ position: relative; }
 
 .searchPill{
@@ -151,7 +151,7 @@ body{
 .suggestionTitle{ font-weight: 650; }
 .suggestionMeta{ font-size: 12px; color: var(--muted); }
 
-/* list container */
+/* List container */
 .sidebarGlass{
   flex: 1;
   border-radius: 22px;
@@ -161,7 +161,7 @@ body{
   box-shadow: var(--shadow);
   padding: 14px;
   overflow: hidden;
-  min-height: 0; /* ✅ дає нормально скролити всередині */
+  min-height: 0; /* ✅ */
 }
 
 .cityList{
@@ -171,7 +171,7 @@ body{
   height: 100%;
   overflow: auto;
   padding-right: 6px;
-  min-height: 0;
+  min-height: 0; /* ✅ */
 }
 
 .cityList::-webkit-scrollbar{ width: 8px; }
@@ -180,7 +180,7 @@ body{
   border-radius: 99px;
 }
 
-/* item pill */
+/* Item pill */
 .cityPill{
   width: 100%;
   border-radius: 999px;
@@ -224,7 +224,7 @@ body{
   max-width: 100%;
 }
 
-/* ACTIVE highlight */
+/* Active highlight */
 .cityPill.isActive{
   color: var(--active);
   border-color: rgba(243,226,199,.55);
@@ -244,10 +244,10 @@ body{
 
 /* ===== Main ===== */
 .main{
-  height: calc(100dvh - (2 * clamp(12px, 2vw, 34px)));
+  height: calc(100dvh - (2 * clamp(10px, 2vw, 28px)));
   overflow: auto;
   padding: 16px;
-  min-width: 0;
+  min-height: 0; /* ✅ */
 }
 
 /* ===== WeatherDisplay ===== */
@@ -359,10 +359,10 @@ body{
   color: rgba(255,255,255,.62);
 }
 
-/* ===== ✅ Mobile/Tablet: STILL SIDE-BY-SIDE (2 columns) ===== */
+/* ===== Mobile/Tablet: still side-by-side ===== */
 @media (max-width: 980px){
   .app{
-    grid-template-columns: minmax(220px, 46vw) 1fr; /* ✅ поруч */
+    grid-template-columns: minmax(220px, 46vw) 1fr;
     gap: 12px;
     padding: 12px;
   }
@@ -379,7 +379,7 @@ body{
 
 @media (max-width: 520px){
   .app{
-    grid-template-columns: minmax(190px, 52vw) 1fr; /* ✅ поруч навіть на малих */
+    grid-template-columns: minmax(190px, 52vw) 1fr;
     gap: 10px;
     padding: 10px;
   }

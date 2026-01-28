@@ -27,7 +27,6 @@ export default function Sidebar({
     setSuggestions([]);
   };
 
-  // autocomplete (debounce + abort)
   useEffect(() => {
     const q = inputValue.trim();
 
@@ -63,7 +62,7 @@ export default function Sidebar({
     setSuggestions([]);
   }
 
-  // GEO + міста в один список, вибране стає першим
+  // GEO + cities together, selected first
   const orderedItems = useMemo(() => {
     const geoItem = {
       kind: "geo",
