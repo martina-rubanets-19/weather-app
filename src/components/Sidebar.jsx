@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { searchLocations } from "../api/weather";
 
+const GEO_ID = "__geo__";
+
 export default function Sidebar({
   cities,
   selectedCityId,
@@ -25,7 +27,7 @@ export default function Sidebar({
     setSuggestions([]);
   };
 
-  // автокомпліт (debounce + abort)
+  // autocomplete (debounce + abort)
   useEffect(() => {
     const q = inputValue.trim();
 
@@ -61,10 +63,8 @@ export default function Sidebar({
     setSuggestions([]);
   }
 
-  // ✅ GEO + міста в один список + “вибране перше”
+  // ✅ GEO + міста в один список, і вибране стає першим
   const orderedItems = useMemo(() => {
-    const GEO_ID = "__geo__";
-
     const geoItem = {
       kind: "geo",
       id: GEO_ID,
@@ -87,7 +87,7 @@ export default function Sidebar({
     const rest = all.filter((x) => x.id !== selectedCityId);
 
     return selected ? [selected, ...rest] : all;
-  }, [cities, onSelectCity, onSelectGeo, selectedCityId]);
+  }, [cities, selectedCityId, onSelectCity, onSelectGeo]);
 
   return (
     <aside className="sidebar">

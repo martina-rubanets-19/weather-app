@@ -27,14 +27,14 @@ body{
   color: var(--text);
 }
 
-/* Layout */
+/* ===== Layout ===== */
 .app{
   min-height: 100vh;
   width: 100%;
   display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: clamp(16px, 2.4vw, 34px);
-  padding: clamp(14px, 2.4vw, 34px);
+  grid-template-columns: 340px 1fr;   /* desktop default */
+  gap: clamp(14px, 2vw, 34px);
+  padding: clamp(12px, 2vw, 34px);
 
   position: relative;
   overflow: hidden;
@@ -47,49 +47,46 @@ body{
 
 .app::after{
   content:"";
-  position: absolute;
-  inset: 0;
+  position:absolute;
+  inset:0;
   pointer-events:none;
   background: linear-gradient(180deg, rgba(0,0,0,.20), rgba(0,0,0,.35));
-  z-index: 0;
+  z-index:0;
 }
 
-/* content above overlay */
 .sidebar, .main{ position: relative; z-index: 1; }
 
-/* Themes (optional) */
+/* Optional themes */
 .app.sunny-theme {
   background:
-    radial-gradient(1100px 700px at 50% 15%, rgba(255, 230, 100, 0.16), transparent 60%),
+    radial-gradient(1100px 700px at 50% 15%, rgba(255,230,100,.16), transparent 60%),
     linear-gradient(180deg, #0b2a4a, #06083a);
 }
 .app.rainy-theme {
   background:
-    radial-gradient(1100px 700px at 50% 15%, rgba(100, 150, 255, 0.14), transparent 60%),
+    radial-gradient(1100px 700px at 50% 15%, rgba(100,150,255,.14), transparent 60%),
     linear-gradient(180deg, #0c1a2b, #06083a);
 }
 .app.cloudy-theme {
   background:
-    radial-gradient(1100px 700px at 50% 15%, rgba(200, 200, 255, 0.10), transparent 60%),
+    radial-gradient(1100px 700px at 50% 15%, rgba(200,200,255,.10), transparent 60%),
     linear-gradient(180deg, #141a2a, #06083a);
 }
 .app.snowy-theme {
   background:
-    radial-gradient(1100px 700px at 50% 15%, rgba(255, 255, 255, 0.10), transparent 60%),
+    radial-gradient(1100px 700px at 50% 15%, rgba(255,255,255,.10), transparent 60%),
     linear-gradient(180deg, #0e1c34, #06083a);
 }
 
-/* Sidebar */
+/* ===== Sidebar ===== */
 .sidebar{
-  height: calc(100vh - (2 * clamp(14px, 2.4vw, 34px)));
-  display: flex;
+  height: calc(100vh - (2 * clamp(12px, 2vw, 34px)));
+  display:flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.brandRow{
-  padding: 6px 6px 0;
-}
+.brandRow{ padding: 6px 6px 0; }
 .brandText{
   opacity: .28;
   letter-spacing: .5px;
@@ -127,7 +124,7 @@ body{
 }
 .searchInput::placeholder{ color: rgba(255,255,255,.45); }
 
-/* Autocomplete (glass) */
+/* Autocomplete */
 .suggestionsGlass{
   margin-top: 10px;
   border-radius: 16px;
@@ -153,7 +150,7 @@ body{
 .suggestionTitle{ font-weight: 650; }
 .suggestionMeta{ font-size: 12px; color: var(--muted); }
 
-/* list container like figma card */
+/* list container */
 .sidebarGlass{
   flex: 1;
   border-radius: 22px;
@@ -166,7 +163,7 @@ body{
 }
 
 .cityList{
-  display: flex;
+  display:flex;
   flex-direction: column;
   gap: 10px;
   height: 100%;
@@ -180,7 +177,7 @@ body{
   border-radius: 99px;
 }
 
-/* pill item */
+/* item pill */
 .cityPill{
   width: 100%;
   border-radius: 999px;
@@ -208,7 +205,7 @@ body{
   display:flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 0; /* ✅ важливо для ellipsis */
+  min-width: 0;
 }
 .pillCountry{
   font-size: 11px;
@@ -218,24 +215,20 @@ body{
 .pillName{
   font-size: 16px;
   letter-spacing: .2px;
-
-  /* ✅ щоб довгі назви не ламали верстку на iPhone */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
 }
 
-/* ACTIVE: білий/беж + “світіння” */
+/* ACTIVE highlight */
 .cityPill.isActive{
   color: var(--active);
   border-color: rgba(243,226,199,.55);
   background: rgba(255,255,255,.11);
   box-shadow: 0 10px 26px rgba(0,0,0,.22);
 }
-.cityPill.isActive .pillCountry{
-  opacity: .55;
-}
+.cityPill.isActive .pillCountry{ opacity: .55; }
 
 .gpsMark{
   width: 10px;
@@ -246,15 +239,15 @@ body{
   flex: 0 0 auto;
 }
 
-/* Main */
+/* ===== Main ===== */
 .main{
-  height: calc(100vh - (2 * clamp(14px, 2.4vw, 34px)));
+  height: calc(100vh - (2 * clamp(12px, 2vw, 34px)));
   border-radius: 18px;
   overflow: auto;
   padding: 16px;
 }
 
-/* WeatherDisplay */
+/* ===== WeatherDisplay ===== */
 .content{
   min-height: 100%;
   display: grid;
@@ -327,7 +320,7 @@ body{
   font-size: 34px;
 }
 
-/* empty state */
+/* Empty state */
 .emptyCenter{
   min-height: 100%;
   display:flex;
@@ -362,31 +355,40 @@ body{
   color: rgba(255,255,255,.62);
 }
 
-/* ✅ Mobile / Tablet */
+/* ===== ✅ Mobile/Tablet: STILL SIDE-BY-SIDE ===== */
 @media (max-width: 980px){
-  .app{ grid-template-columns: 1fr; }
-  .sidebar{ height: auto; }
-  .main{ height: auto; padding: 0; }
+  .app{
+    grid-template-columns: minmax(220px, 42vw) 1fr; /* поруч */
+    gap: 14px;
+    padding: 12px;
+    min-height: 100dvh;
+  }
 
-  /* ✅ КЛЮЧОВЕ: на мобілці список ВЕРТИКАЛЬНИЙ */
+  .sidebar{ height: calc(100dvh - 24px); }
+  .main{ height: calc(100dvh - 24px); padding: 0; }
+
   .cityList{
-    flex-direction: column;
+    height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
-    height: auto;
   }
 
-  .cityPill{
-    width: 100%;
-    min-width: 0;
+  .centerBlock{ padding-top: 22px; }
+  .statGridFig{
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
-
-  .centerBlock{ padding-top: 26px; }
 }
 
 @media (max-width: 520px){
-  .brandText{ font-size: 18px; }
+  .app{
+    grid-template-columns: minmax(190px, 46vw) 1fr; /* поруч навіть на малих */
+    gap: 12px;
+  }
+
+  .brandText{ font-size: 17px; }
   .searchInput{ padding: 12px 14px 12px 38px; }
-  .statGridFig{ grid-template-columns: 1fr; }
-  .statValue{ font-size: 30px; }
+
+  .temp{ font-size: 64px; }
+  .statValue{ font-size: 28px; }
 }

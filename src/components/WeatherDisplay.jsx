@@ -14,9 +14,9 @@ export default function WeatherDisplay({ weather }) {
   return (
     <div className="content">
       <header className="topBar">
-        <div className="topLeft">
+        <div>
           <div className="location">
-            {String(weather.city).toUpperCase()}{" "}
+            {String(weather.city).toUpperCase()}
             <span className="mutedCaps">{String(weather.country).toUpperCase()}</span>
           </div>
           <div className="condLine muted">{weather.conditionText}</div>
