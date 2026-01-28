@@ -63,7 +63,7 @@ export default function Sidebar({
     setSuggestions([]);
   }
 
-  // ✅ GEO + міста в один список, і вибране стає першим
+  // GEO + міста в один список, вибране стає першим
   const orderedItems = useMemo(() => {
     const geoItem = {
       kind: "geo",
@@ -97,7 +97,9 @@ export default function Sidebar({
 
       <form onSubmit={handleSubmit} className="searchForm" autoComplete="off">
         <div className="searchPill">
-          <span className="searchIcon" aria-hidden="true">⌕</span>
+          <span className="searchIcon" aria-hidden="true">
+            ⌕
+          </span>
           <input
             type="text"
             className="searchInput"

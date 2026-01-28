@@ -1,4 +1,3 @@
-// src/api/weather.js
 const BASE = "https://api.weatherapi.com/v1";
 const KEY = import.meta.env.VITE_WEATHER_API_KEY;
 
@@ -13,7 +12,6 @@ async function request(path, params = {}, signal) {
   const res = await fetch(url, { signal });
   const data = await res.json();
 
-  // WeatherAPI часто повертає { error: { message } } при помилках
   if (!res.ok || data?.error) {
     throw new Error(data?.error?.message || `Request failed (${res.status})`);
   }

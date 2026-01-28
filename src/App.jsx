@@ -1,4 +1,4 @@
- import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Sidebar from "./components/Sidebar";
 import WeatherDisplay from "./components/WeatherDisplay";
 import "./styles/App.css";
@@ -7,7 +7,6 @@ import { getCurrent } from "./api/weather";
 const GEO_ID = "__geo__";
 
 function formatUpdatedAt(lastUpdated) {
-  // lastUpdated: "2026-01-27 07:10"
   const d = new Date(String(lastUpdated).replace(" ", "T"));
   if (Number.isNaN(d.getTime())) return `Оновлено: ${lastUpdated}`;
 
@@ -29,7 +28,6 @@ function toWeatherView(apiData, id) {
     country: apiData.location.country,
     updatedAt: formatUpdatedAt(apiData.current.last_updated),
     conditionText: apiData.current.condition.text,
-    icon: <img src={apiData.current.condition.icon} alt="icon" />,
     tempC: Math.round(apiData.current.temp_c),
     feelsLikeC: Math.round(apiData.current.feelslike_c),
     humidity: apiData.current.humidity,
@@ -39,7 +37,6 @@ function toWeatherView(apiData, id) {
 }
 
 function makeCityIdFromApi(apiData) {
-  // стабільний id: lat,lon
   return `${apiData.location.lat},${apiData.location.lon}`;
 }
 
@@ -57,8 +54,8 @@ export default function App() {
 
   const [selectedCityId, setSelectedCityId] = useState(GEO_ID);
 
-  const [weather, setWeather] = useState(null); // для міст зі списку
-  const [geoWeather, setGeoWeather] = useState(null); // для GEO
+  const [weather, setWeather] = useState(null);
+  const [geoWeather, setGeoWeather] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const selectedCity = useMemo(() => {
@@ -84,7 +81,6 @@ export default function App() {
 
     setIsLoading(true);
     try {
-      // 1) якщо місто не існує — тут буде помилка, і ми НІЧОГО не додамо
       const data = await getCurrent(q, "uk");
 
       const id = makeCityIdFromApi(data);
@@ -92,13 +88,11 @@ export default function App() {
       const country = data.location.country;
       const latlon = `${data.location.lat},${data.location.lon}`;
 
-      // 2) додати у список, якщо ще нема
       setCities((prev) => {
         if (prev.some((c) => c.id === id)) return prev;
         return [{ id, q: latlon, name, country }, ...prev];
       });
 
-      // 3) одразу показати погоду (без другого fetch)
       setWeather(toWeatherView(data, id));
       setSelectedCityId(id);
     } catch (e) {
@@ -137,7 +131,6 @@ export default function App() {
         }
       },
       async () => {
-        // fallback якщо не дав доступ
         try {
           const data = await getCurrent("Kyiv", "uk");
           setGeoWeather(toWeatherView(data, GEO_ID));
@@ -152,13 +145,11 @@ export default function App() {
     );
   }
 
-  // старт: одразу пробуємо GEO
   useEffect(() => {
     selectGeo();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // якщо вибрали місто зі списку — підвантажити погоду
   useEffect(() => {
     if (selectedCityId === GEO_ID) return;
     if (!selectedCity) return;
@@ -199,8 +190,11 @@ export default function App() {
 
       <main className="main">
         {isLoading ? (
-          <div className="card">
-            <h2>Завантаження...</h2>
+          <div className="emptyCenter">
+            <div className="emptyCard">
+              <h2 className="emptyTitle">Завантаження...</h2>
+              <p className="emptySub">Трохи магії в хмарах ☁️</p>
+            </div>
           </div>
         ) : (
           <WeatherDisplay weather={shownWeather} />

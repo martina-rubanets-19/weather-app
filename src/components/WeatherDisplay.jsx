@@ -5,7 +5,9 @@ export default function WeatherDisplay({ weather }) {
         <div className="emptyCard">
           <div className="emptyIcon" aria-hidden="true" />
           <h2 className="emptyTitle">Небо на сьогодні</h2>
-          <p className="emptySub">Обери місто — і простір зміниться разом із ним.</p>
+          <p className="emptySub">
+            Обери місто — і простір зміниться разом із ним.
+          </p>
         </div>
       </div>
     );
@@ -17,7 +19,9 @@ export default function WeatherDisplay({ weather }) {
         <div>
           <div className="location">
             {String(weather.city).toUpperCase()}
-            <span className="mutedCaps">{String(weather.country).toUpperCase()}</span>
+            <span className="mutedCaps">
+              {String(weather.country).toUpperCase()}
+            </span>
           </div>
           <div className="condLine muted">{weather.conditionText}</div>
         </div>
@@ -31,7 +35,8 @@ export default function WeatherDisplay({ weather }) {
         </div>
         <div className="muted">
           Відчувається як{" "}
-          {weather.feelsLikeC > 0 ? `+${weather.feelsLikeC}` : weather.feelsLikeC}°C
+          {weather.feelsLikeC > 0 ? `+${weather.feelsLikeC}` : weather.feelsLikeC}
+          °C
         </div>
 
         <div className="statGridFig">
