@@ -8,6 +8,7 @@ export default function Sidebar({
   onSelectCity,
   onAddCity,
   onSelectGeo,
+  onRemoveCity,
   themeMode,
   onThemeChange,
 }) {
@@ -15,10 +16,17 @@ export default function Sidebar({
 
   function submit(e) {
     e.preventDefault();
-    const v = q.trim();
-    if (!v) return;
-    onAddCity(v);
+
+    const value = q.trim();
+    if (!value) return;
+
+    onAddCity(value);
     setQ("");
+  }
+
+  function removeCity(e, id) {
+    e.stopPropagation();
+    onRemoveCity(id);
   }
 
   return (
@@ -34,6 +42,7 @@ export default function Sidebar({
           >
             Light
           </button>
+
           <button
             className={`themeBtn ${themeMode === "system" ? "active" : ""}`}
             onClick={() => onThemeChange("system")}
@@ -41,6 +50,7 @@ export default function Sidebar({
           >
             System
           </button>
+
           <button
             className={`themeBtn ${themeMode === "dark" ? "active" : ""}`}
             onClick={() => onThemeChange("dark")}
@@ -54,6 +64,7 @@ export default function Sidebar({
       <form className="searchForm" onSubmit={submit}>
         <div className="searchPill">
           <div className="searchIcon">⌕</div>
+
           <input
             className="searchInput"
             placeholder="Пошук міста ..."
@@ -65,9 +76,10 @@ export default function Sidebar({
 
       <div className="sidebarGlass">
         <div className="cityList">
-          
           <button
-            className={`cityPill ${selectedCityId === GEO_ID ? "isActive" : ""}`}
+            className={`cityPill ${
+              selectedCityId === GEO_ID ? "isActive" : ""
+            }`}
             onClick={onSelectGeo}
             type="button"
           >
@@ -75,20 +87,33 @@ export default function Sidebar({
               <div className="pillCountry">GEO</div>
               <div className="pillName">Моя геолокація</div>
             </div>
+
             <span className="gpsMark" />
           </button>
 
-          {cities.map((c) => (
+          {cities.map((city) => (
             <button
-              key={c.id}
-              className={`cityPill ${selectedCityId === c.id ? "isActive" : ""}`}
-              onClick={() => onSelectCity(c.id)}
+              key={city.id}
+              className={`cityPill ${
+                selectedCityId === city.id ? "isActive" : ""
+              }`}
+              onClick={() => onSelectCity(city.id)}
               type="button"
             >
               <div className="pillMeta">
-                <div className="pillCountry">{c.country}</div>
-                <div className="pillName">{c.name}</div>
+                <div className="pillCountry">{city.country}</div>
+                <div className="pillName">{city.name}</div>
               </div>
+
+              <span
+                className="removeCityBtn"
+                onClick={(e) => removeCity(e, city.id)}
+                role="button"
+                tabIndex={0}
+                aria-label={`Видалити ${city.name}`}
+              >
+                ×
+              </span>
             </button>
           ))}
         </div>
